@@ -1,237 +1,220 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+
 typedef struct Order {
     int id;
-    char cumstumer[100];
+    char customer[100];
     int status;
     char total[100];
-}Order;
-typedef struct orderHistory {
-    Order *order;
-    struct orderHistory *next;
-}oderHistory;
-typedef struct OrderManagement {
-    Order *order;
-    struct OrderManagement *next;
-    struct OrderManagement *prev;
-}OrderManagement;
+} Order;
 
-OrderManagement* addOderManagement(OrderManagement* head) {
- 
-    Order* oder = (Order*)malloc(sizeof(Order));
+typedef struct OrderNode {
+    Order order;
+    struct OrderNode *next;
+    struct OrderNode *prev;
+} OrderNode;
 
-    printf("Moi ban nhap id: ");
-    scanf("%d", &oder->id);
+OrderNode *head = NULL; 
+OrderNode *history = NULL; 
 
-    printf("Moi ban nhap ten khach hang: ");
-    getchar(); 
-    fgets(oder->cumstumer, 100, stdin);
-    oder->cumstumer[strcspn(oder->cumstumer, "\n")] = 0; 
+OrderNode *createNode(Order order) {
+    OrderNode *newNode = (OrderNode *)malloc(sizeof(OrderNode));
+    newNode->order = order;
+    newNode->next = NULL;
+    newNode->prev = NULL;
+    return newNode;
+}
 
-    printf("Moi ban nhap status (0: Dang xu ly, 1: Da giao): ");
-    scanf("%d", &oder->status);
+void addOrder() {
+    Order order;
+    printf("Nhap ID: ");
+    scanf("%d", &order.id);
+    getchar();
+    printf("Nhap ten khach hang: ");
+    fgets(order.customer, sizeof(order.customer), stdin);
+    order.customer[strcspn(order.customer, "\n")] = 0;
 
-    printf("Moi ban nhap total: ");
-    getchar(); 
-    fgets(oder->total, 100, stdin);
-    oder->total[strcspn(oder->total, "\n")] = 0; 
+    printf("Nhap trang thai (0: chua giao, 1: da giao): ");
+    scanf("%d", &order.status);
+    getchar();
+    printf("Nhap tong tien: ");
+    fgets(order.total, sizeof(order.total), stdin);
+    order.total[strcspn(order.total, "\n")] = 0;
 
-    OrderManagement* newNode = createOrderManagement(oder);
-
+    OrderNode *newNode = createNode(order);
     if (head == NULL) {
-      
         head = newNode;
     } else {
-        
-        OrderManagement* temp = head;
-        while (temp->next != NULL) {
-            temp = temp->next;
-        }
+        OrderNode *temp = head;
+        while (temp->next) temp = temp->next;
         temp->next = newNode;
         newNode->prev = temp;
     }
-    printf("Them don hang thanh cong!\n");
-    return head; 
+    printf("==> Them don hang thanh cong!\n");
 }
-    return orderManagement;
-}
-void displayOrderManagement(OrderManagement *head) {
-if (head == NULL) {
-    printf("Danh sach rong ");
-    return ;
-}
-    OrderManagement *temp=head;
-    while (temp != NULL) {
-        printf("ID: %d\n",temp->order->id);
-        printf("Cumstumer: %s\n",temp->order->cumstumer);
-        printf("Status: %d\n",temp->order->status);
-        printf("Total: %s\n",temp->order->total);
-        temp=temp->next;
 
-        printf("\n");
-
+void displayOrders() {
+    if (!head) {
+        printf("Danh sach don hang rong!\n");
+        return;
     }
-    
-}
-void addOderManagement(OrderManagement *head) {
-    Order *oder =(OrderManagement *)malloc(sizeof(OrderManagement));
-    printf("Moi ban nhap id");
-    scanf("%d",&oder->id);
-    printf("Moi ban nhap cumstumer");
-    getchar();
-    fgets(oder->cumstumer,100,stdin);
-    printf("Moi ban nhap status");
-    scanf("%d",&oder->status);
-    printf("Moi ban nhap total");
-    getchar();
-    fgets(oder->total,100,stdin);
-    OrderManagement *temp=createOrderManagement(oder);
-
-}
-OrderManagement* deleteOrderManagement(OrderManagement* head, int id) {
-    if (head == NULL) {
-        printf("Danh sach rong!\n");
-        return NULL;
-    }
-
-    OrderManagement* temp = head;
-
-    
-    while (temp != NULL && temp->order->id != id) {
+    OrderNode *temp = head;
+    printf("=== Danh sach don hang ===\n");
+    while (temp) {
+        printf("ID: %d\n", temp->order.id);
+        printf("Khach hang: %s\n", temp->order.customer);
+        printf("Trang thai: %s\n", temp->order.status == 0 ? "Chua giao" : "Da giao");
+        printf("Tong tien: %s\n", temp->order.total);
+        printf("---------------------------\n");
         temp = temp->next;
     }
+}
 
-    if (temp == NULL) {
-        printf("Khong tim thay don hang voi ID: %d\n", id);
-        return head;
+void deleteOrder(int id) {
+    OrderNode *temp = head;
+    while (temp && temp->order.id != id) temp = temp->next;
+    if (!temp) {
+        printf("Khong tim thay don hang!\n");
+        return;
     }
 
-    
-    if (temp == head) {
-        head = temp->next;
+    if (temp->prev) temp->prev->next = temp->next;
+    else head = temp->next;
+    if (temp->next) temp->next->prev = temp->prev;
+
+    free(temp);
+    printf("==> Xoa don hang thanh cong!\n");
+}
+
+void updateOrder(int id) {
+    OrderNode *temp = head;
+    while (temp && temp->order.id != id) temp = temp->next;
+    if (!temp) {
+        printf("Khong tim thay don hang!\n");
+        return;
     }
-    if (temp->next != NULL) { 
-        temp->next->prev = temp->prev;
+
+    getchar();
+    printf("Nhap ten khach hang moi: ");
+    fgets(temp->order.customer, sizeof(temp->order.customer), stdin);
+    temp->order.customer[strcspn(temp->order.customer, "\n")] = 0;
+
+    printf("Nhap tong tien moi: ");
+    fgets(temp->order.total, sizeof(temp->order.total), stdin);
+    temp->order.total[strcspn(temp->order.total, "\n")] = 0;
+
+    printf("==> Cap nhat thanh cong!\n");
+}
+
+void markDelivered(int id) {
+    OrderNode *temp = head;
+    while (temp && temp->order.id != id) temp = temp->next;
+    if (!temp) {
+        printf("Khong tim thay don hang!\n");
+        return;
     }
-    if (temp->prev != NULL) { 
+
+   
+    temp->order.status = 1;
+
+   
+    OrderNode *newNode = createNode(temp->order);
+    newNode->next = history;
+    if (history) history->prev = newNode;
+    history = newNode;
+
+   
+    if (temp->prev) {
         temp->prev->next = temp->next;
     }
-
-    free(temp->order); 
-    free(temp);        
-    printf("Da xoa don hang co ID: %d\n", id);
-
-    return head;
+    else head = temp->next;
+    if (temp->next){
+        temp->next->prev = temp->prev;
+    }
+    free(temp);
+    printf("==> Don hang da duoc danh dau la da giao!\n");
 }
 
-
-void updateOrderManagement(OrderManagement* head, int id) {
-    if (head == NULL) {
-        printf("Danh sach rong!\n");
-        return;
+void sortOrders() {
+    for (OrderNode *i = head; i != NULL; i = i->next) {
+        for (OrderNode *j = i->next; j != NULL; j = j->next) {
+            if (atoi(i->order.total) > atoi(j->order.total)) {
+                Order temp = i->order;
+                i->order = j->order;
+                j->order = temp;
+            }
+        }
     }
-    OrderManagement* temp = head;
-    while (temp != NULL && temp->order->id != id) {
-        temp = temp->next;
-    }
-    if (temp == NULL) {
-        printf("Khong tim thay don hang voi ID: %d\n", id);
-        return;
-    }
-
-    printf("--- Cap nhat thong tin cho don hang ID: %d ---\n", id);
-    printf("Ten khach hang hien tai: %s\n", temp->order->cumstumer);
-    printf("Total hien tai: %s\n", temp->order->total);
-
-    printf("Moi ban nhap ten khach hang moi: ");
-    getchar(); 
-    fgets(temp->order->cumstumer, 100, stdin);
-    temp->order->cumstumer[strcspn(temp->order->cumstumer, "\n")] = 0;
-
-
-    printf("Moi ban nhap so tien moi: ");
-    fgets(temp->order->total, 100, stdin);
-    temp->order->total[strcspn(temp->order->total, "\n")] = 0;
-
-    printf("Cap nhat thanh cong!\n");
+    printf("==> Sap xep thanh cong!\n");
 }
 
-
-void searchOrderManagement(OrderManagement* head, int id) {
-    if (head == NULL) {
-        printf("Danh sach rong!\n");
-        return;
-    }
-    
-    OrderManagement* temp = head;
-    while (temp != NULL) {
-        if (temp->order->id == id) {
-            printf("\n--- Tim thay don hang ---\n");
-            printf("ID: %d\n", temp->order->id);
-            printf("Status: %d (%s)\n", temp->order->status, temp->order->status == 0 ? "Dang xu ly" : "Da giao");
-            printf("Customer: %s\n", temp->order->cumstumer);
-            printf("Total: %s\n", temp->order->total);
-            return;
+void searchOrder(int id) {
+    OrderNode *temp = head;
+    int found = 0;
+    while (temp) {
+        if ((id != -1 && temp->order.id == id) ||
+            (name && strstr(temp->order.customer, name))) {
+            printf("ID: %d\n", temp->order.id);
+            printf("Khach hang: %s\n", temp->order.customer);
+            printf("Trang thai: %s\n", temp->order.status == 0 ? "Chua giao" : "Da giao");
+            printf("Tong tien: %s\n", temp->order.total);
+            printf("---------------------------\n");
+            found = 1;
         }
         temp = temp->next;
     }
-    printf("Khong tim thay don hang voi ID: %d\n", id);
+    if (!found) printf("Khong tim thay don hang!\n");
 }
 
 int main() {
     int choice;
-    OrderManagement *node=NULL;
-    oderHistory *head=NULL;
     do {
-        printf("\n-------- ORDER MANAGER --------\n");
-        printf("1.Them don vi hang moi\n");
-        printf("2.Hien thi danh sach don hang\n");
-        printf("3.Xoa don hang (theo id)\n");
-        printf("4.Cap nhap thong tin don hang\n");
-        printf("5.Danh dau don hang da giao\n");
-        printf("6.Sap xep don hang theo tong ten\n");
-        printf("7.Tim kiem don hang\n");
-        printf("8.Thoat chuong trinh\n");
-        printf("Moi ban nhap lua chon : ");
+        printf("\n===== MENU =====\n");
+        printf("1. Them don hang\n");
+        printf("2. Hien thi don hang\n");
+        printf("3. Xoa don hang\n");
+        printf("4. Cap nhat don hang\n");
+        printf("5. Danh dau da giao\n");
+        printf("6. Sap xep don hang theo tong tien\n");
+        printf("7. Tim kiem don hang\n");
+        printf("8. Thoat\n");
+        printf("Lua chon: ");
         scanf("%d", &choice);
+
+        int id;
+        char name[100];
         switch (choice) {
-            case 1:
-                 node = addOderManagement(node);
-                break;
-            case 2:
-                displayOrderManagement(node);
-                break;
+            case 1: addOrder(); break;
+            case 2: displayOrders(); break;
             case 3:
-                int pos;
-                printf("Moi ban nhap vi tri muon xoa ");
-                scanf("%d", &pos);
-                deleteOrderManagement(node,pos);
+                printf("Nhap ID can xoa: ");
+                scanf("%d", &id);
+                deleteOrder(id);
                 break;
             case 4:
-                int id;
-                printf("Moi ban nhap vi tri muon thay doi thong tin ");
+                printf("Nhap ID can cap nhat: ");
                 scanf("%d", &id);
-                updateOrderManagement(node,id);
+                updateOrder(id);
                 break;
             case 5:
-
+                printf("Nhap ID can danh dau da giao: ");
+                scanf("%d", &id);
+                markDelivered(id);
                 break;
-            case 6:
-                AscendingOrder(node);
+            case 6: 
+                sortOrders();
                 break;
             case 7:
-                int search;
-                printf("Moi ban nhap id muon tim");
-                scanf("%d", &search);
-                searchOrderManagement(node,search);
+                printf("Nhap ID : ");
+                scanf("%d", &id);
+               
+                 searchOrder(id);
                 break;
-            case 8:
-                printf("Thoat chuong trinh \n");
-                break;
-
-            default:
-                printf("Moi ban nhap lai \n");
+            case 8: printf("Thoat chuong trinh.\n"); break;
+            default: printf("Lua chon khong hop le!\n");
         }
-    }while (choice !=8);
+    } while (choice != 8);
+
     return 0;
 }
