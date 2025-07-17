@@ -16,12 +16,43 @@ typedef struct OrderManagement {
     struct OrderManagement *prev;
 }OrderManagement;
 
-OrderManagement *createOrderManagement(Order *oder) {
+OrderManagement* addOderManagement(OrderManagement* head) {
+ 
+    Order* oder = (Order*)malloc(sizeof(Order));
 
-    OrderManagement *orderManagement=(OrderManagement *)malloc(sizeof(OrderManagement));
-    orderManagement->order=oder;
-    orderManagement->prev=NULL;
-    orderManagement->next=NULL;
+    printf("Moi ban nhap id: ");
+    scanf("%d", &oder->id);
+
+    printf("Moi ban nhap ten khach hang: ");
+    getchar(); 
+    fgets(oder->cumstumer, 100, stdin);
+    oder->cumstumer[strcspn(oder->cumstumer, "\n")] = 0; 
+
+    printf("Moi ban nhap status (0: Dang xu ly, 1: Da giao): ");
+    scanf("%d", &oder->status);
+
+    printf("Moi ban nhap total: ");
+    getchar(); 
+    fgets(oder->total, 100, stdin);
+    oder->total[strcspn(oder->total, "\n")] = 0; 
+
+    OrderManagement* newNode = createOrderManagement(oder);
+
+    if (head == NULL) {
+      
+        head = newNode;
+    } else {
+        
+        OrderManagement* temp = head;
+        while (temp->next != NULL) {
+            temp = temp->next;
+        }
+        temp->next = newNode;
+        newNode->prev = temp;
+    }
+    printf("Them don hang thanh cong!\n");
+    return head; 
+}
     return orderManagement;
 }
 void displayOrderManagement(OrderManagement *head) {
@@ -40,7 +71,7 @@ if (head == NULL) {
         printf("\n");
 
     }
-    printf("AGGG\n");
+    
 }
 void addOderManagement(OrderManagement *head) {
     Order *oder =(OrderManagement *)malloc(sizeof(OrderManagement));
@@ -57,82 +88,95 @@ void addOderManagement(OrderManagement *head) {
     OrderManagement *temp=createOrderManagement(oder);
 
 }
-
-void deleteOrderManagement(OrderManagement *head,int position) {
+OrderManagement* deleteOrderManagement(OrderManagement* head, int id) {
     if (head == NULL) {
-        printf("Danh sach rong ");
-        return ;
+        printf("Danh sach rong!\n");
+        return NULL;
     }
-    OrderManagement *temp=head;
-    OrderManagement *prev=NULL;
-    while (temp != NULL && temp->order->id != position) {
-                prev=temp;
-        temp=temp->next;
-    }
-    if (temp == NULL) {
-        printf("Khong tim thay ");
-        return ;
 
+    OrderManagement* temp = head;
+
+    
+    while (temp != NULL && temp->order->id != id) {
+        temp = temp->next;
     }
+
+    if (temp == NULL) {
+        printf("Khong tim thay don hang voi ID: %d\n", id);
+        return head;
+    }
+
+    
     if (temp == head) {
-        head=head->next;
-        free(temp);
+        head = temp->next;
     }
-    prev->next=temp->next;
-    free(temp);
-    return ;
+    if (temp->next != NULL) { 
+        temp->next->prev = temp->prev;
+    }
+    if (temp->prev != NULL) { 
+        temp->prev->next = temp->next;
+    }
 
+    free(temp->order); 
+    free(temp);        
+    printf("Da xoa don hang co ID: %d\n", id);
+
+    return head;
 }
-void updateOrderManagement(OrderManagement *head , int pos) {
+
+
+void updateOrderManagement(OrderManagement* head, int id) {
     if (head == NULL) {
-        printf("Danh sach rong ");
-        return ;
+        printf("Danh sach rong!\n");
+        return;
     }
-    OrderManagement *temp=head;
-    while (temp != NULL && temp->order->id != pos) {
-        temp=temp->next;
+    OrderManagement* temp = head;
+    while (temp != NULL && temp->order->id != id) {
+        temp = temp->next;
     }
     if (temp == NULL) {
-        printf("Khong tim thay ");
-        return ;
+        printf("Khong tim thay don hang voi ID: %d\n", id);
+        return;
     }
 
-    printf("Cumstumer : %s \n",temp->order->cumstumer);
-    printf("Total : %d \n",temp->order->total);
-    printf("Moi ban nhap ten khach hang moi");
-    gets(temp->order->cumstumer);
-    printf("\n Moi ban nhap so tien moi");
-    gets(temp->order->total);
+    printf("--- Cap nhat thong tin cho don hang ID: %d ---\n", id);
+    printf("Ten khach hang hien tai: %s\n", temp->order->cumstumer);
+    printf("Total hien tai: %s\n", temp->order->total);
 
+    printf("Moi ban nhap ten khach hang moi: ");
+    getchar(); 
+    fgets(temp->order->cumstumer, 100, stdin);
+    temp->order->cumstumer[strcspn(temp->order->cumstumer, "\n")] = 0;
+
+
+    printf("Moi ban nhap so tien moi: ");
+    fgets(temp->order->total, 100, stdin);
+    temp->order->total[strcspn(temp->order->total, "\n")] = 0;
+
+    printf("Cap nhat thanh cong!\n");
 }
-void AscendingOrder(OrderManagement *head) {
 
-  for (int i = 0; i < head->order->status; i++) {
-      for (int j = 0; j < head->order->status; j++) {
 
-      }
-
-    }
-
-}
-void markOder(OrderManagement *head) {
-
-}
-void searchOrderManagement(OrderManagement *head, int id) {
+void searchOrderManagement(OrderManagement* head, int id) {
     if (head == NULL) {
-        printf("Danh sach rong ");
-        return ;
+        printf("Danh sach rong!\n");
+        return;
     }
-    OrderManagement *temp=head;
-    if (temp->order->id == id) {
-        printf("ID: %d\n",temp->order->id);
-        printf("Status: %d\n",temp->order->status);
-        printf("Cumstumer: %s\n",temp->order->cumstumer);
-        printf("Total: %s\n",temp->order->total);
-
+    
+    OrderManagement* temp = head;
+    while (temp != NULL) {
+        if (temp->order->id == id) {
+            printf("\n--- Tim thay don hang ---\n");
+            printf("ID: %d\n", temp->order->id);
+            printf("Status: %d (%s)\n", temp->order->status, temp->order->status == 0 ? "Dang xu ly" : "Da giao");
+            printf("Customer: %s\n", temp->order->cumstumer);
+            printf("Total: %s\n", temp->order->total);
+            return;
+        }
+        temp = temp->next;
     }
+    printf("Khong tim thay don hang voi ID: %d\n", id);
 }
-
 
 int main() {
     int choice;
@@ -152,7 +196,7 @@ int main() {
         scanf("%d", &choice);
         switch (choice) {
             case 1:
-                addOderManagement(node);
+                 node = addOderManagement(node);
                 break;
             case 2:
                 displayOrderManagement(node);
